@@ -17,6 +17,7 @@ class SeriesExportService(BaseModuleService):
     LIST_FIELDS = ["导出编号", "测点范围", "时间范围", "导出格式", "采样粒度", "记录条数", "分片大小", "导出水位"]
     REQUIRED_FIELDS = ["导出编号", "测点范围", "时间范围"]
     STATUS_ORDER = ["草稿", "待导出", "导出中", "已交付"]
+    # 数据导出操作：按测点范围时间窗口导出降采样与归并结果到分片导出文件
     ACTION_RULES = {"启动导出": "导出中", "确认交付": "已交付", "标记失败": "已交付"}
     NEGATIVE_ACTIONS = []
 
@@ -39,6 +40,7 @@ class SeriesExportService(BaseModuleService):
                 for r in records:
                     exported.append({
                         "export_id": task["导出编号"],
+                        # 数据产物输出：写入导出结果为分片交付JSONL数据文件
                         "source": "rollup_window",
                         "point": r.get("point", ""),
                         "window_index": r.get("window_start", 0),

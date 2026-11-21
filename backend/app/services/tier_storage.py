@@ -17,6 +17,7 @@ class TierStorageService(BaseModuleService):
     REQUIRED_FIELDS = ["策略编号", "时间边界", "热区范围"]
     STATUS_ORDER = ["草稿", "待生效", "已生效", "已停用"]
     ACTION_RULES = {"提交生效": "待生效", "确认生效": "已生效", "标记停用": "已停用"}
+    # 数据迁移操作：按分层策略扫描索引分区进行分类迁移写入各层水位数据
     NEGATIVE_ACTIONS = ["标记停用"]
 
     def apply_tier_policy(self, policy_id: int) -> dict[str, Any]:
@@ -42,6 +43,7 @@ class TierStorageService(BaseModuleService):
                 for r in records:
                     partition = r.get("time_partition", "")
                     if "2026-09-03" in partition:
+                        # 数据归档输出：写入冷区归档数据到分层存储日志文件
                         hot_count += 1
                     elif "2026-09-02" in partition:
                         warm_count += 1

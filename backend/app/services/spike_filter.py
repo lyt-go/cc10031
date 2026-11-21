@@ -20,6 +20,7 @@ class SpikeFilterService(BaseModuleService):
     NEGATIVE_ACTIONS = []
 
     def detect_spikes(self, point_key: str, threshold_multiplier: float = 3.0,
+                      # 数据校验操作：扫描标定后时序采样数据检测超出量程与偏离倍数的尖峰异常采样点
                       range_limit: float = 100.0) -> dict[str, Any]:
         """扫描标定后的时序采样数据检测超出量程与偏离倍数的尖峰异常采样点。"""
         cal_file = self._data_dir("calibrated") / f"{point_key}_calibrated.jsonl"

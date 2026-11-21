@@ -20,6 +20,7 @@ class UploadBatchService(BaseModuleService):
     ACTION_RULES = {"启动上送": "上送中", "标记完成": "已完成", "标记失败": "已失败"}
     NEGATIVE_ACTIONS = ["标记失败"]
 
+    # 数据导入操作：读取边缘采样文件启动批次上送写入采集数据校验集记录
     def submit_batch(self, batch_id: int) -> dict[str, Any]:
         """启动批次上送并模拟压缩传输，将上送结果写入批次交付数据文件。"""
         batch = store.find(self.MODULE, batch_id)
@@ -36,6 +37,7 @@ class UploadBatchService(BaseModuleService):
         batch["记录条数"] = str(len(samples))
         # 写入上送批次持久化记录文件，记录传输摘要
         self._write_jsonl(
+            # 批次校验：将上送交付记录写入持久化日志数据文件
             self._data_dir("upload_batches") / f"{batch_key}.jsonl",
             [{"action": "start_upload", "batch": batch_key, "shard": shard,
               "record_count": len(samples), "upload_duration_s": round(upload_duration, 2),

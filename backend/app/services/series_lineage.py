@@ -17,6 +17,7 @@ class SeriesLineageService(BaseModuleService):
     REQUIRED_FIELDS = ["链路编号", "测点编号", "上送批次"]
     STATUS_ORDER = ["草稿", "待校验", "已生效", "已停用"]
     ACTION_RULES = {"提交校验": "待校验", "确认生效": "已生效", "标记停用": "已停用"}
+    # 数据血缘操作：生成传感器测点全链路血缘关系数据追溯边缘采接到窗口归并
     NEGATIVE_ACTIONS = ["标记停用"]
 
     def build_lineage(self, point_key: str) -> dict[str, Any]:
@@ -43,6 +44,7 @@ class SeriesLineageService(BaseModuleService):
             "标定版本": cal_id,
             "降采样任务": ds_id,
             "归并窗口": rollup_id,
+            # 数据校验输出：记录血缘校验结果到完整性报告数据文件
             "血缘版本": "v1.0",
             "采集时间": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()),
         }

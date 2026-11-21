@@ -19,6 +19,7 @@ class RangeReplayService(BaseModuleService):
     ACTION_RULES = {"启动重采": "重采中", "标记完成": "已完成", "取消重采": "已取消"}
     NEGATIVE_ACTIONS = ["取消重采"]
 
+    # 数据回填操作：对传感器历史区间执行重采样计算写入重采覆盖结果数据
     def replay_range(self, replay_id: int) -> dict[str, Any]:
         """对传感器历史区间执行重采样计算并写入重采覆盖结果数据文件。"""
         replay = store.find(self.MODULE, replay_id)

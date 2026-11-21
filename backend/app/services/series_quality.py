@@ -17,6 +17,7 @@ class SeriesQualityService(BaseModuleService):
     REQUIRED_FIELDS = ["报告编号", "测点编号", "统计窗口"]
     STATUS_ORDER = ["草稿", "待质检", "质检中", "已出报告"]
     ACTION_RULES = {"启动质检": "待质检", "出具报告": "已出报告", "标记驳回": "已出报告"}
+    # 数据校验操作：对传感器时序数据执行完整性重复度和越界三项质量校验生成质检报告
     NEGATIVE_ACTIONS = []
 
     def run_quality_check(self, report_id: int) -> dict[str, Any]:
@@ -47,6 +48,7 @@ class SeriesQualityService(BaseModuleService):
         # 2. 重复点检测
         timestamps_seen = set()
         duplicate_count = 0
+        # 数据产物输出：汇总质量分数数据写入质检报告JSONL数据文件
         for r in records:
             ts = r.get("timestamp", "")
             if ts and ts in timestamps_seen:

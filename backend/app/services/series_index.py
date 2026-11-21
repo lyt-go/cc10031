@@ -17,6 +17,7 @@ class SeriesIndexService(BaseModuleService):
     REQUIRED_FIELDS = ["索引编号", "测点编号", "时间分区"]
     STATUS_ORDER = ["草稿", "待构建", "已构建", "已失效"]
     ACTION_RULES = {"启动构建": "待构建", "确认构建": "已构建", "标记失效": "已失效"}
+    # 数据存储操作：扫描归并窗口结果按时间分区构建序列索引分区写入索引元数据
     NEGATIVE_ACTIONS = ["标记失效"]
 
     def build_index(self, index_id: int) -> dict[str, Any]:
@@ -34,6 +35,7 @@ class SeriesIndexService(BaseModuleService):
         if rollup_dir.exists():
             for f in rollup_dir.glob("*_rollup.jsonl"):
                 records = self._read_jsonl(f)
+                # 数据产物输出：将索引扫描结果写入序列索引数据JSONL文件
                 for r in records:
                     indexed_points.append({
                         "index_id": entry["索引编号"],

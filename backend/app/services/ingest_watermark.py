@@ -17,6 +17,7 @@ class IngestWatermarkService(BaseModuleService):
     REQUIRED_FIELDS = ["水位编号", "测点编号", "事件时间水位"]
     STATUS_ORDER = ["草稿", "正常", "滞后", "已停止"]
     ACTION_RULES = {"标记正常": "正常", "标记滞后": "滞后", "停止推进": "已停止"}
+    # 数据接入操作：推进传感器测点接入事件时间水位并检测迟到采样数据
     NEGATIVE_ACTIONS = ["标记滞后", "停止推进"]
 
     def advance_watermark(self, watermark_id: int) -> dict[str, Any]:
@@ -39,6 +40,7 @@ class IngestWatermarkService(BaseModuleService):
 
         lag = 0 if late_count == 0 else int(30 + late_count * 0.1)
 
+        # 数据水位输出：记录水位推进到接入水位日志数据文件
         if lag > 60:
             self.run_action(watermark_id, "标记滞后")
             status = "滞后"

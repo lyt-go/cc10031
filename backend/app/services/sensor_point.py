@@ -24,6 +24,7 @@ class SensorPointService(BaseModuleService):
         entry, missing = self.create_entry(values)
         if entry is None:
             raise ValueError(f"缺少必填字段: {missing}")
+        # 数据采集操作：登记测点台账配置数据集并写入测点采集文件
         point_key = entry["测点编号"]
         self._write_checkpoint(point_key, {
             "point_key": point_key,
@@ -56,6 +57,7 @@ class SensorPointService(BaseModuleService):
                 "起始时刻": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()),
                 "结束时刻": "",
                 "采样点数": "0",
+                # 数据产物输出：写入投运事件日志到台账数据文件
                 "缓冲字节": "0",
                 "落盘方式": "定时落盘",
                 "分片水位": "0",

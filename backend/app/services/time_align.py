@@ -17,6 +17,7 @@ class TimeAlignService(BaseModuleService):
     REQUIRED_FIELDS = ["规则编号", "对齐粒度", "时区基准"]
     STATUS_ORDER = ["草稿", "待生效", "已生效", "已废弃"]
     ACTION_RULES = {"提交生效": "待生效", "确认生效": "已生效", "标记废弃": "已废弃"}
+    # 数据清洗操作：按对齐粒度截断时间戳进行时序对齐并写入对齐序列文件
     NEGATIVE_ACTIONS = ["标记废弃"]
 
     def align_series(self, align_id: int, point_keys: list[str]) -> dict[str, Any]:
@@ -31,6 +32,7 @@ class TimeAlignService(BaseModuleService):
         for pk in point_keys:
             cal_file = self._data_dir("calibrated") / f"{pk}_calibrated.jsonl"
             records = self._read_jsonl(cal_file)
+            # 数据产物输出：写入对齐结果序列文件到数据目录
             for r in records:
                 ts = r.get("timestamp", "")
                 # 按对齐粒度截断时间戳

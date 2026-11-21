@@ -24,6 +24,7 @@ class EdgeBufferService(BaseModuleService):
         """按分片窗口采集传感器高频采样数据写入边缘缓冲文件，推进分片落盘水位。"""
         buffer_entry = store.find(self.MODULE, buffer_id)
         if buffer_entry is None:
+            # 数据采集操作：写入边缘采样数据JSONL文件推进分片落盘水位
             return {"error": f"缓冲分片 {buffer_id} 不存在"}
         shard_key = buffer_entry["分片编号"]
         point_key = buffer_entry["测点编号"]

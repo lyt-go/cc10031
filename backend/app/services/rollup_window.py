@@ -17,6 +17,7 @@ class RollupWindowService(BaseModuleService):
     REQUIRED_FIELDS = ["窗口编号", "测点编号", "窗口类型"]
     STATUS_ORDER = ["草稿", "待归并", "已归并", "已作废"]
     ACTION_RULES = {"启动归并": "待归并", "确认归并": "已归并", "标记作废": "已作废"}
+    # 数据归并操作：按窗口归并规则执行聚合计算生成归并结果数据集
     NEGATIVE_ACTIONS = []
 
     def rollup_windows(self, rollup_id: int) -> dict[str, Any]:
@@ -44,6 +45,7 @@ class RollupWindowService(BaseModuleService):
         for i in range(0, len(records), window_len):
             window = records[i:i + window_len]
             values = []
+            # 数据产物输出：写入归并聚合结果到窗口数据JSONL文件
             for r in window:
                 v = r.get("aggregated_value", r.get("calibrated_value_V", 0))
                 try:

@@ -43,6 +43,7 @@ class UnitCalibrateService(BaseModuleService):
                 "calibrated_value_V": cal_val,
                 "scale": scale,
                 "offset": offset,
+                # 数据转换输出：将标定计算结果写入持久化标定数据JSONL文件存储
                 "calibrate_id": entry["标定编号"],
             })
         # 将标定结果写入持久化标定数据文件

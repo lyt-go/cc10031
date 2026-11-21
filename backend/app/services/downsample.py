@@ -19,6 +19,7 @@ class DownsampleService(BaseModuleService):
     ACTION_RULES = {"启动执行": "执行中", "标记完成": "已完成", "标记失败": "已完成"}
     NEGATIVE_ACTIONS = []
 
+    # 数据聚合操作：按窗口执行降采样聚合计算生成降采样结果序列数据集
     def downsample_series(self, task_id: int, source_data_file: str | None = None) -> dict[str, Any]:
         """按聚合方式对高频时序数据进行降采样计算生成降采样结果数据集。"""
         task = store.find(self.MODULE, task_id)
@@ -47,6 +48,7 @@ class DownsampleService(BaseModuleService):
             window = records[i:i + window_size]
             values = []
             for r in window:
+                # 数据产物输出：将降采样结果写入降采样序列数据JSONL文件
                 v = r.get("calibrated_value_V", r.get("raw_value_mV", r.get("raw_value", 0)))
                 try:
                     values.append(float(v))

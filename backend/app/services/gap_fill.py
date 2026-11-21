@@ -19,6 +19,7 @@ class GapFillService(BaseModuleService):
     ACTION_RULES = {"启动填补": "待填补", "确认填补": "已填补", "标记放弃": "已放弃"}
     NEGATIVE_ACTIONS = ["标记放弃"]
 
+    # 数据计算操作：扫描对齐序列数据检测时间戳断点区间生成缺失区间数据集
     def detect_gaps(self, point_key: str, expected_interval: float = 0.1) -> dict[str, Any]:
         """扫描对齐后的序列数据检测时间戳断点区间，生成缺失区间汇总数据集。"""
         aligned_file = self._data_dir("aligned") / f"TIME-{point_key}_aligned.jsonl"

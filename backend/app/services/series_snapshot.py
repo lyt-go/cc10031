@@ -17,6 +17,7 @@ class SeriesSnapshotService(BaseModuleService):
     REQUIRED_FIELDS = ["快照编号", "口径说明", "测点范围"]
     STATUS_ORDER = ["草稿", "待确认", "已发布", "已归档"]
     ACTION_RULES = {"提交确认": "待确认", "发布快照": "已发布", "标记归档": "已归档"}
+    # 数据归并操作：生成指定口径降采样与归并结果版本快照写入快照归档数据
     NEGATIVE_ACTIONS = []
 
     def create_snapshot(self, snapshot_id: int) -> dict[str, Any]:
@@ -43,6 +44,7 @@ class SeriesSnapshotService(BaseModuleService):
                         "window_index": r.get("window_start", 0),
                         "rollup_value": r.get("rollup_value", 0),
                         "metric": r.get("metric", ""),
+                    # 数据归档输出：将已发布快照归档到冷区存储写入快照归档日志文件
                     })
 
         ds_dir = self._data_dir("downsampled")
