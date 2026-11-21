@@ -1,9 +1,20 @@
-"""模块服务基类：共享查询、登记、动作和统计骨架，业务差异留在各模块文件。"""
+"""模块服务基类：共享查询、登记、动作、文件IO和跨模块数据流骨架。"""
 from __future__ import annotations
 
+import json
+import os
+import hashlib
+import time
+from pathlib import Path
 from typing import Any
 
 from app.store import store
+
+DATA_ROOT = Path(__file__).resolve().parent.parent.parent.parent / "data"
+
+
+def _ensure_dir(path: Path) -> None:
+    path.mkdir(parents=True, exist_ok=True)
 
 
 class BaseModuleService:
@@ -14,6 +25,8 @@ class BaseModuleService:
     STATUS_ORDER: list[str] = []
     ACTION_RULES: dict[str, str] = {}
     NEGATIVE_ACTIONS: list[str] = []
+
+    # -- 基础 CRUD --
 
     def list_entries(
         self,
@@ -86,3 +99,80 @@ class BaseModuleService:
             "by_status": by_status,
             "abnormal": sum(1 for row in rows if row.get("abnormal")),
         }
+
+    # -- 文件 IO 工具 --
+
+    def _data_dir(self, sub: str) -> Path:
+        p = DATA_ROOT / sub
+        _ensure_dir(p)
+        return p
+
+    def _write_jsonl(self, filepath: Path, records: list[dict[str, Any]]) -> int:
+        """将记录列表按行写入 JSONL 文件，返回实际写入条数。"""
+        _ensure_dir(filepath.parent)
+        written = 0
+        with open(filepath, "a", encoding="utf-8") as f:
+            for rec in records:
+                f.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
+                written += 1
+        return written
+
+    def _read_jsonl(self, filepath: Path) -> list[dict[str, Any]]:
+        """从 JSONL 文件逐行读取记录列表，用于跨模块共享数据产物。"""
+        if not filepath.exists():
+            return []
+        records = []
+        with open(filepath, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        records.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+        return records
+
+    def _write_checkpoint(self, name: str, state: dict[str, Any]) -> Path:
+        """写入检查点文件记录处理进度水位。"""
+        p = self._data_dir("checkpoints")
+        cp_file = p / f"{name}.json"
+        state["_updated_at"] = time.time()
+        with open(cp_file, "w", encoding="utf-8") as f:
+            json.dump(state, f, ensure_ascii=False, indent=2, default=str)
+        return cp_file
+
+    def _read_checkpoint(self, name: str) -> dict[str, Any] | None:
+        """读取检查点文件获取上次处理的水位标记。"""
+        cp_file = self._data_dir("checkpoints") / f"{name}.json"
+        if not cp_file.exists():
+            return None
+        with open(cp_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _compute_checksum(self, content: str) -> str:
+        return hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
+
+    # -- 跨模块自动触发帮助器 --
+
+    @staticmethod
+    def _safe_import(module_path: str, class_name: str):
+        """延迟导入，避免循环依赖。"""
+        import importlib
+        mod = importlib.import_module(module_path)
+        return getattr(mod, class_name)
+
+    def _auto_create_seed(self, module: str, overrides: dict[str, Any]) -> dict[str, Any] | None:
+        """跨模块自动创建配套配置条目并写入种子数据集。"""
+        rows = store.rows(module)
+        new_id = max((int(r.get("id", 0)) for r in rows), default=0) + 1
+        entry = {"id": new_id}
+        for field, default_val in overrides.items():
+            entry[field] = default_val
+        entry["status"] = "已生效"
+        entry["pending"] = False
+        entry["abnormal"] = False
+        rows.append(entry)
+        return entry
+
+    def _has_auto_triggers(self) -> bool:
+        return False
