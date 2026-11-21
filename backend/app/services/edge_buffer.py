@@ -2,6 +2,7 @@
 按分片窗口采集采样点数据写入 JSONL 持久化文件，落盘完成后触发上送批次创建。"""
 from __future__ import annotations
 
+import json
 import time
 from typing import Any
 
