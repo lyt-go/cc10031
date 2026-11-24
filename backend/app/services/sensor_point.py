@@ -36,7 +36,7 @@ class SensorPointService(BaseModuleService):
         })
         # 将测点台账记录写入持久化数据文件
         self._write_jsonl(
-            self._data_dir("sensor_points") / "point_ledger.jsonl",
+            self._data_dir("sensor_points") / "point_registry.jsonl",
             [{"action": "register", "point_key": point_key, "产线": entry["所属产线"], "at": time.time()}]
         )
         return entry
@@ -85,7 +85,7 @@ class SensorPointService(BaseModuleService):
             triggers["device_health"] = {"error": str(e)}
         # 写入投运事件日志
         self._write_jsonl(
-            self._data_dir("sensor_points") / "point_ledger.jsonl",
+            self._data_dir("sensor_points") / "point_registry.jsonl",
             [{"action": "activate", "point_key": point_key, "at": time.time()}]
         )
         return {
